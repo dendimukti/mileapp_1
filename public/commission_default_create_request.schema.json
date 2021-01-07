@@ -1,0 +1,166 @@
+{
+    "$schema": "http://json-shema.org/draft-07/schema#",
+    "$id": "file://./docs/schema/commission_default_create_request.schema.json",
+    "type": "object",
+    "required": [
+        "data"
+    ],
+    "properties": {
+        "data": {
+            "type": "object",
+            "required": [
+                "commission"
+            ],
+            "properties": {
+                "commission": {
+                    "type": "object",
+                    "required": [
+                        "commission_defaults",
+                        "action_by",
+                        "action_email"
+                    ],
+                    "properties": {
+                        "commission_defaults": {
+                            "type": "array",
+                            "minItems": 1,
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "logistic_id",
+                                    "rate_id",
+                                    "city_id",
+                                    "entity_type",
+                                    "value",
+                                    "uom",
+                                    "level",
+                                    "payment_type",
+                                    "effective_at",
+                                    "is_active"
+                                ],
+                                "properties": {
+                                    "logistic_id": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "rate_id": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "city_id": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "entity_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "DRIVER",
+                                            "HUB",
+                                            "MA",
+                                            "MERCHANT",
+                                            "SHIPPER",
+                                            "SORT_HUB",
+                                            "STORE",
+                                            "TAX"
+                                        ]
+                                    },
+                                    "value": {
+                                        "type": "number"
+                                    },
+                                    "uom": {
+                                        "type": "string",
+                                        "enum": [
+                                            "PERCENTAGE",
+                                            "VALUE"
+                                        ]
+                                    },
+                                    "level": {
+                                        "type": "integer",
+                                        "enum": [
+                                            1,
+                                            2,
+                                            3
+                                        ]
+                                    },
+                                    "payment_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "POSTPAID",
+                                            "PREPAID",
+                                            "NONE"
+                                        ]
+                                    },
+                                    "effective_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "expired_at": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        ]
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "allOf": [
+                                    {
+                                        "if": {
+                                            "properties": {
+                                                "uom": {
+                                                    "enum": [
+                                                        "PERCENTAGE"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "properties": {
+                                                "value": {
+                                                    "minimum": 0,
+                                                    "maximum": 100
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "if": {
+                                            "properties": {
+                                                "uom": {
+                                                    "enum": [
+                                                        "VALUE"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "properties": {
+                                                "value": {
+                                                    "minimum": 0
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "action_by": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "action_email": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

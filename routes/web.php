@@ -1,7 +1,5 @@
 <?php
 
-/** @var \Laravel\Lumen\Routing\Router $router */
-
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -14,5 +12,15 @@
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return "DENDI: ".$router->app->version();
+});
+// , 'middleware' => 'auth', 'namespace'
+$router->group(['prefix' => 'api'], function () use ($router){
+
+    $router->get('order', ['as' => 'get.order', 'uses' => 'OrderController@getOrders']);
+    $router->get('order/{id}', ['as' => 'get.order.id', 'uses' => 'OrderController@getOrder']);
+    $router->post('order', ['as' => 'post.order', 'uses' => 'OrderController@postOrder']);
+    $router->put('order', ['as' => 'put.order', 'uses' => 'OrderController@putOrder']);
+    $router->patch('order', ['as' => 'patch.order', 'uses' => 'OrderController@patchOrder']);
+    $router->delete('order', ['as' => 'delete.order', 'uses' => 'OrderController@delOrder']);
 });
