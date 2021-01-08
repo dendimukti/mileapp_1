@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -89,12 +90,31 @@ class OrderController extends Controller
         'destination_data.organization_id' => 'required|integer',
         'destination_data.location_id' => 'required|string',
 
+        'koli_data' => 'present|array',
+        'koli_data.*.koli_length' => 'required|integer',
+        'koli_data.*.awb_url' => 'required|string',
+        'koli_data.*.created_at' => 'required|date',
+        'koli_data.*.koli_chargeable_weight' => 'required|integer',
+        'koli_data.*.koli_width' => 'required|integer',
+        'koli_data.*.koli_surcharge' => 'required|array',
+        'koli_data.*.koli_height' => 'required|integer',
+        'koli_data.*.updated_at' => 'required|date',
+        'koli_data.*.koli_description' => 'required|string',
+        'koli_data.*.koli_formula_id' => 'required|nullable',
+        'koli_data.*.connote_id' => 'required|string',
+        'koli_data.*.koli_volume' => 'required|integer',
+        'koli_data.*.koli_weight' => 'required|integer',
+        'koli_data.*.koli_id' => 'required|string',
+        'koli_data.*.koli_custom_field' => 'required',
+        'koli_data.*.koli_custom_field.awb_sicepat' => 'required|nullable',
+        'koli_data.*.koli_custom_field.harga_barang' => 'required|nullable',
+        'koli_data.*.koli_code' => 'required|string',
+
         'custom_field.catatan_tambahan' => 'required|string',
 
         'currentLocation.name' => 'required|string',
         'currentLocation.code' => 'required|string',
         'currentLocation.type' => 'required|string',
-
     ];
 
     public function __construct()
@@ -103,52 +123,300 @@ class OrderController extends Controller
     }
 
     //
-    public function getOrders(Request $request) {
-        $data = Order::orderBy('created_at', 'desc')->get();
+    public function getOrders(Request $request)
+    {
+        $orders = [];
 
-        return response()->json($data);
-    }
-
-    public function getOrder(Request $request) {
-        $data = Order::where('transaction_id', $request->id)->get();
-        
-        return response()->json($data, 200);
-    }
-
-    public function postOrder(Request $request) {
-        
-        $data = $request;
-        $validator = Validator::make($request->all(), $this->rule);
-
-        if ($validator->fails()) {
-            $res['IS_SUCCESS'] = false;
-            $res['MESSAGE'] = 'Invalid Parameter';
-            $res['ERRORS'] = $validator->errors();
-            return response()->json($res);
+        try {
+            $orders = Order::orderBy('created_at', 'desc')->get();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
         }
 
-        $data['transaction_id'] = (string) Str::uuid();
-        $curTime = Carbon::now();
+        if (count($orders) <= 0) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 404,
+                    'message' => 'Data not found',
+                ],
+            ]);
+        }
 
-	// "created_at": "2020-07-15T11:11:12+0700",
-	// "updated_at": "2020-07-15T11:11:22+0700",
-    // "created_at": "2021-01-07T07:38:57.865058Z",
-    // "updated_at": "2021-01-07T07:38:57.865058Z",
-		$data['created_at'] = $curTime;
-		$data['updated_at'] = $curTime;
-        return response()->json($data);
+        return response()->json([
+            'data' => $orders,
+            'metadata' => [
+                'status' => 200,
+                'message' => 'Data found',
+            ],
+        ]);
     }
 
-    public function putOrder(Request $request) {
-        return "putOrder";
+    public function getOrder(Request $request)
+    {
+        try {
+            $order = Order::where('transaction_id', $request->id)->get();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        if (count($order) <= 0) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 404,
+                    'message' => 'Data not found',
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'data' => $order,
+            'metadata' => [
+                'status' => 200,
+                'message' => 'Data found',
+            ],
+        ]);
     }
 
-    public function patchOrder(Request $request) {
-        return "patchOrder";
+    public function create(Request $request)
+    {
+        $validator = Validator::make($request->all(), $this->rule);
+        if ($validator->fails()) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 403,
+                    'message' => $validator->errors(),
+                ],
+            ]);
+        }
+
+        try {
+            $order = new Order();
+
+            $curTime = Carbon::now();
+            $order->transaction_id = (string) Str::uuid();
+            $order->customer_name = $request->customer_name;
+            $order->customer_code = $request->customer_code;
+            $order->transaction_amount = $request->transaction_amount;
+            $order->transaction_discount = $request->transaction_discount;
+            $order->transaction_additional_field = $request->transaction_additional_field;
+            $order->transaction_payment_type = $request->transaction_payment_type;
+            $order->transaction_state = $request->transaction_state;
+            $order->transaction_code = $request->transaction_code;
+            $order->transaction_order = $request->transaction_order;
+            $order->location_id = $request->location_id;
+            $order->organization_id = $request->organization_id;
+            $order->created_at = $curTime;
+            $order->updated_at = $curTime;
+            $order->transaction_payment_type_name = $request->transaction_payment_type_name;
+            $order->transaction_cash_amount = $request->transaction_cash_amount;
+            $order->transaction_cash_change = $request->transaction_cash_change;
+            $order->customer_attribute = $request->customer_attribute;
+            $order->connote = $request->connote;
+            $order->connote_id = $request->connote_id;
+            $order->origin_data = $request->origin_data;
+            $order->destination_data = $request->destination_data;
+            $order->koli_data = $request->koli_data;
+            $order->custom_field = $request->custom_field;
+            $order->currentLocation = $request->currentLocation;
+            $order->save();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'data' => $order,
+            'metadata' => [
+                'status' => 201,
+                'message' => 'Data Created',
+            ],
+        ]);
     }
 
-    public function delOrder(Request $request) {
-        return "delOrder";
+    public function update(Request $request)
+    {
+        try {
+            $order = Order::where('transaction_id', $request->id)->get();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        if (count($order) <= 0) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 404,
+                    'message' => 'Data not found',
+                ],
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), $this->rule);
+        if ($validator->fails()) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 403,
+                    'message' => $validator->errors(),
+                ],
+            ]);
+        }
+
+        try {
+            $order->customer_name = $request->customer_name;
+            $order->customer_code = $request->customer_code;
+            $order->transaction_amount = $request->transaction_amount;
+            $order->transaction_discount = $request->transaction_discount;
+            $order->transaction_additional_field = $request->transaction_additional_field;
+            $order->transaction_payment_type = $request->transaction_payment_type;
+            $order->transaction_state = $request->transaction_state;
+            $order->transaction_code = $request->transaction_code;
+            $order->transaction_order = $request->transaction_order;
+            $order->location_id = $request->location_id;
+            $order->organization_id = $request->organization_id;
+            $order->updated_at = Carbon::now();
+            $order->transaction_payment_type_name = $request->transaction_payment_type_name;
+            $order->transaction_cash_amount = $request->transaction_cash_amount;
+            $order->transaction_cash_change = $request->transaction_cash_change;
+            $order->customer_attribute = $request->customer_attribute;
+            $order->connote = $request->connote;
+            $order->connote_id = $request->connote_id;
+            $order->origin_data = $request->origin_data;
+            $order->destination_data = $request->destination_data;
+            $order->koli_data = $request->koli_data;
+            $order->custom_field = $request->custom_field;
+            $order->currentLocation = $request->currentLocation;
+            $order->save();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'data' => $order,
+            'metadata' => [
+                'status' => 200,
+                'message' => 'Data Updated',
+            ],
+        ]);
     }
 
+    public function updateState(Request $request)
+    {
+        try {
+            $order = Order::where('transaction_id', $request->id)->get();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        if (count($order) <= 0) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 404,
+                    'message' => 'Data not found',
+                ],
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'transaction_state' => ['required', Rule::in(['INIT', 'PENDING', 'PAID', 'CANCEL', 'EXPIRE'])],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 403,
+                    'message' => $validator->errors(),
+                ],
+            ]);
+        }
+
+        try {
+            $order->transaction_state = $request->transaction_state;
+            $order->updated_at = Carbon::now();
+            $order->save();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'data' => $order,
+            'metadata' => [
+                'status' => 200,
+                'message' => 'Data Updated',
+            ],
+        ]);
+    }
+
+    public function delete(Request $request)
+    {
+        try {
+            $order = Order::where('transaction_id', $request->id)->get();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        if (count($order) <= 0) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 404,
+                    'message' => 'Data not found',
+                ],
+            ]);
+        }
+
+        try {
+            $order->delete();
+        } catch (Exception $e) {
+            return response()->json([
+                'metadata' => [
+                    'status' => 500,
+                    'message' => $e->getMessage(),
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'metadata' => [
+                'status' => 200,
+                'message' => 'Data deleted successfully',
+            ],
+        ]);
+    }
 }
