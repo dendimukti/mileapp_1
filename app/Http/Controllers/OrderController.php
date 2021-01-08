@@ -138,7 +138,7 @@ class OrderController extends Controller
             ]);
         }
 
-        if (count($orders) <= 0) {
+        if ($orders === null) {
             return response()->json([
                 'metadata' => [
                     'status' => 404,
@@ -169,7 +169,7 @@ class OrderController extends Controller
             ]);
         }
 
-        if (count($order) <= 0) {
+        if ($order === null) {
             return response()->json([
                 'metadata' => [
                     'status' => 404,
@@ -260,7 +260,7 @@ class OrderController extends Controller
             ]);
         }
 
-        if (count($order) <= 0) {
+        if ($order === null) {
             return response()->json([
                 'metadata' => [
                     'status' => 404,
@@ -335,7 +335,7 @@ class OrderController extends Controller
             ]);
         }
 
-        if (count($order) <= 0) {
+        if ($order === null) {
             return response()->json([
                 'metadata' => [
                     'status' => 404,
@@ -392,7 +392,7 @@ class OrderController extends Controller
             ]);
         }
 
-        if (count($order) <= 0) {
+        if ($order === null) {
             return response()->json([
                 'metadata' => [
                     'status' => 404,
