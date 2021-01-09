@@ -12,9 +12,9 @@
 */
 
 $router->get('/', function () use ($router) {
-    return "DENDI: " . $router->app->version();
+    return $router->app->version();
 });
-// , 'middleware' => 'auth', 'namespace'
+
 $router->group(['prefix' => 'api'], function () use ($router) {
 
     $router->get('order', ['as' => 'get.order', 'uses' => 'OrderController@getOrders']);
